@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat \"E:\\code\\写作\\前端的路在哪里\\index.md\")"
+    ],
+    "deny": []
+  }
+}
