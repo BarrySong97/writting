@@ -1,27 +1,176 @@
-在开发 flutter iOS 升级调试的过程中我们会遇到这样一个问题比如我们的数据是存在本地的那么我们可能会分为测试环境、开发环境以及生产环境
-这三个环境在 ios 上对应的就是三个 app.在 iOS 上每个 App 都有一个对应的 Bundle ID 所以我们需要在 Developer Environment 还有测试环境我们以及最后发布到应用商店的环境我们需要三个不同的 Bundle ID.
-但是 flutter 又不和 web 一样 Web 直接指令通过环境变量来指定.
-为什么使用 Flutter 开发 iOS 或 Android 会如此特殊是因为我们的程序是先写在 flutter 里面然后 flutter 它会转移一部分在 Xcode 或者 Android studio 里面它再去打包成对应的所以说中间像套一层就不是很方便操作里面的就是通过变量来设置某个环境参数
-那我们开始吧 我们直接开始设置xcode的如何配置不同环境面向下对应不同的 bundle id
-首先打开我们的flutter green的ls文件使用xcode打开我们可以看到中间有一个runner这个东西大家注意这个东西这个在Xcode里面称为schema不同的schema会对应一个不同的打包逻辑我们在 Flutter build iOS 的时候就可以通过指定 schema 的名字来实现不同的打包轮
-那我们如果不指定一个就是一个schema的话他默认的就是你第一个runner
-OK 第一步先点左边点一下Runner这个Menu左边有一个Project,里面有info,点击info,我们可以看到Debug/Release/Profile分别对应不同环境下打包的一些参数。
-那么我们默认的就是呃我们在呃开发环境默认就是debug我们在发布到那个的话默认就是 release
-注意这里的debug release和profile它们配置的bundle id都是一个所以你在开发环境使用侦记调试如果你发布到appstore里面再下载下来你们下载是同一个文件它会把它覆盖你们的数据就混成使用一个数据源所以这里我们就不管它们我们添加两个新的configuration
-我们点击加号就能看到Duplicate Debug Profile Release我们就Duplicate Debug Release两个东西就可以了
-然后我们再给他们分别的改名改叫 Debug.dev.release.dev
-OK,好了之后这个就表示我们可以这个是跟runner进行绑定的我们就可以指定他们去绑定不同的runner那我们原本的debug profile-release 绑定的是runner那我们新创建的dev 为结尾的就会绑定一个新的schema
+# Flutter iOS 真机上同时安装不同环境的同一应用
 
-接著我们往左边看看到Project下面有一个Targets,Targets我们依旧点击Runner
-点击Runner之后我们可以看到上面的Tab有很多东西那这时候我们点击Build Settings我们在那个future框里面搜索user defined
-接著我们添加一个变样叫APP DISPLAY NAME
-我们点击加号就可以选中对应的Build Configuration我们给它填上不同的名字这个就看你们自己来了
-接著我们前面说过不同的App对应一个不同的Bundle ID那么我们点回旁边的Targets,Runner,然后我们点General
-之后我们再去看到下面有个an identity我们看到有个bundle identifier然后旁边有一个箭头我们点击一下
-点进去后,会看到有不同的Bundle Identifier我们填入自己的不同的就行了
-我们点击 Manage Schema然后找到我们的Runner Duplicate 就可以了我们点击+号之后target选择runner然后取个新的名字就可以了
-然后我们退出来之后我们再点击runner点击added schema
-我们先选择我们刚刚创建的schema
-然后我们再点击Added Schema
-左边有 build run test profile然后我们首先先选先选
-我们先选Wrong我们可以看到左边的infoBuild Configuration 是Debug那我们这里选择我们创建的Debug
+## 问题背景
+
+在 iOS 上安装的应用都对应一个独一无二的 Bundle ID。在开发 Flutter iOS 应用时，我们通常使用真机进行调试，而我们的数据又是存储在本地的。
+
+但是因为我们的 Bundle ID 是一致的，所以会导致开发时安装的 App 和从 App Store 下载下来的 App 是同一个，这就会导致数据混合的问题。
+
+为了解决这个问题，我们需要为测试环境、开发环境以及生产环境设置不同的 Bundle ID，这样它们在 iOS 上就对应三个不同的 App。
+
+![示例](showcase1.png)
+
+这里我只展示两个，一个是真实发布的 bundle id，一个对应的是开发的 bundle id。
+
+## 准备环境
+
+在开始配置之前，请确保你已经准备好以下环境：
+
+- MacBook
+- VSCode 用来开发 flutter
+- Xcode 用来打包
+- iOS Simulator 用来调试
+
+## 配置步骤
+
+### 1. 打开 Xcode 项目
+
+首先打开我们的 Flutter 工程的 iOS 文件，使用 Xcode 打开。
+
+我们可以看到最上面的正中间有一个 Runner。
+
+![xcode1](xcode1.png)
+
+这个在 Xcode 里面称为 Scheme。不同的 Scheme 会对应一个不同的打包逻辑，我们在 Flutter build iOS 的时候就可以通过指定 Scheme 的名字来实现不同的打包流程。
+
+那我们如果不指定 Scheme 的话，它默认的就是第一个 Runner。
+
+### 2. 配置 Build Configuration
+
+接着左边点一下 Runner 这个 Menu，接着在再点击里面 Project 下面的 Runner，继续点击 Info。
+
+![xcode2](xcode2.png)
+
+在 Configuration 模块我们可以看到 Debug/Release/Profile 分别对应不同环境下打包的一些参数。
+
+![xcode3](xcode3.png)
+
+我们在开发的时候就是默认 Debug，我们在发布的话默认就是 Release。
+
+目前这里的 Debug、Release 和 Profile 它们配置的 Bundle ID 都是一个，所以你在开发环境使用调试，如果你发布到 App Store 里面再下载下来，就会覆盖你开发环境安装的应用，反之同理。
+
+接着我们在 Configuration 模块，点击加号，选择 Duplicate Debug、Release。
+
+![xcode4](xcode4.png)
+
+然后我们再给它们分别改名，改叫 Debug_dev、Release_dev。
+
+### 3. 设置 APP DISPLAY NAME
+
+接着我们往左边看，看到 Project 下面有一个 Targets，Targets 我们依旧点击 Runner。
+
+![xcode5](xcode5.png)
+
+点击 Runner 之后我们可以看到上面的 Tab 有很多东西，接着我们点击 Build Settings。
+
+接着点击加号，然后添加一个环境变量 APP_DISPLAY_NAME，根据不同 build configuration，设置不一样的名字。
+
+![xcode7](xcode7.png)
+
+![xcode8](xcode8.png)
+
+注意这里只是注册了一个变量并不是真实的改变了打包之后的名字，我们依然要到 info.plist 里面去修改。
+
+现在我们在 xcode 里面打开 info，然后找到 Bundle display name, 修改其 value 如图所示，改成刚刚你添加变量的名字**APP_DISPLAY_NAME**
+
+![xcode9](xcode9.png)
+
+### 4. 配置 Bundle Identifier
+
+我们现在开始对不同的配置设置不同 Bundle ID，那么我们点回旁边的 Targets，Runner，然后我们点 General。
+
+![xcode10](xcode10.png)
+
+之后我们再去看到下面有个 Identity，我们看到有个 Bundle Identifier，然后旁边有一个箭头，我们点击一下。
+
+![xcode11](xcode11.png)
+
+点进去后，会看到有不同的 Bundle Identifier，我们填入自己的不同的就行了。
+
+![xcode12](xcode12.png)
+
+### 5. 创建新的 Scheme
+
+fluttong 可以通过--flavor 命令来调用不同的 schema，也就是我们最开始说过的。
+
+我们只需要创建一个新的 shcema 来对应新的 configruation 就好了。
+
+我们点击 Manage Scheme。
+
+![xcode13](xcode13.png)
+
+点击右下角的加号。
+
+![xcode14](xcode14.png)
+
+选择默认的 runner，然后我们输入新的名字，比如 dev ，然后点击 ok 创建。
+
+![xcode15](xcode15.png)
+
+然后我们退出来之后，我们再点击 Runner，点击 Edit Scheme。
+
+![xcode16](xcode16.png)
+
+我们先选择我们刚刚创建的 Scheme。
+
+![xcode17](xcode17.png)
+
+接着我们点击左边的 Run，build configuration 改成 Debug_dev 或者你自己修改的名字。
+
+![xcode18](xcode18.png)
+
+下面的 Archive 也是一样的，切换成 Release_dev
+
+![xcode19](xcode19.png)
+
+现在为止全部配置完毕。
+
+## vscode 配置不同的启动命令
+
+找到 vscode 的 debug 页面，点击这个设置按钮开始配置运行命令。
+
+![vscode1](vscode1.png)
+
+直接复制我的就好了。
+
+```json
+    {
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Flutter Dev",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "--flavor",
+        "dev",
+        "-t", // if your have different main file
+        "lib/main.dart"
+      ]
+    },
+    {
+      "name": "Flutter Noraml",
+      "request": "launch",
+      "type": "dart",
+      "args": [
+        "-t", // if your have different main file
+        "lib/main.dart"
+      ]
+    }
+  ]
+}
+
+}
+
+```
+
+解释一下命令`--flavor dev`，这个是用来区分不同环境的，dev, dev 对应的是 schema 的名字，如果没有指定就是默认的 runner。
+
+在打包的的时候记住如果要区分也要指定`--flavor dev`
+
+```bash
+flutter build ios --release --flavor dev
+```
